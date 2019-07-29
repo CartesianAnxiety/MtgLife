@@ -1,6 +1,7 @@
 package dev.mtglife
 
 import android.app.AlertDialog
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
@@ -14,13 +15,18 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
-    private var myLife: Int = 20
-    private var theirLife: Int = 20
+    private var defaultLife: Int = 20
+    private var myLife: Int = defaultLife
+    private var theirLife: Int = defaultLife
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        val pref = this?.getPreferences(Context.MODE_PRIVATE)
+        myLife = pref.getInt(getString(R.string.my_life), defaultLife)
+        theirLife = pref.getInt(getString(R.string.their_life), defaultLife)
 
         // set up down listeners
         myLifePlusButton.setOnClickListener {
@@ -42,8 +48,8 @@ class MainActivity : AppCompatActivity() {
             builder.setTitle("New game?")
             builder.setMessage("Are sure you want a new game?")
             builder.setPositiveButton("YES"){_, _ ->
-                myLife = 20
-                theirLife = 20
+                myLife = defaultLife
+                theirLife = defaultLife
                 update()
             }
             builder.setNegativeButton("Cancel"){_, _ -> }
@@ -53,6 +59,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun update() {
+        val sharedPref = this?.getPreferences(Context.MODE_PRIVATE) ?: return
+        with (sharedPref.edit()) {
+            putInt(getString(R.string.my_life), myLife)
+            putInt(getString(R.string.their_life), theirLife)
+            commit()
+        }
         findViewById<TextView>(R.id.myLife).text = myLife.toString()
         findViewById<TextView>(R.id.theirLife).text = theirLife.toString()
     }
